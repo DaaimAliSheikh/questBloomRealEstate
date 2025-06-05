@@ -28,6 +28,7 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import api from "@/api/axios";
 
+
 const metaInformation = {
   title: "Property Single V5 || Homez - Real Estate ReactJS Template",
 };
