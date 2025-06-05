@@ -40,6 +40,7 @@ const SingleV5 = () => {
   useEffect(() => {
     const fetchProperty = async () => {
       const response = await api.get(`/properties/${id}`);
+      console.log("property fetched is", response.data);
       setProperty({ ...response.data, id });
       setLoading(false);
     };
