@@ -31,7 +31,7 @@ import api from "@/api/axios";
 const metaInformation = {
   title: "Property Single V5 || Homez - Real Estate ReactJS Template",
 };
-
+const isDev = import.meta.env.DEV;
 const SingleV5 = () => {
   const params = useParams();
   const { id } = params;
@@ -39,7 +39,13 @@ const SingleV5 = () => {
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     const fetchProperty = async () => {
-      const response = await api.get(`/properties/${id}`);
+      const response = isDev
+        ? await api.get(`/properties/${id}`)
+        : await api.get("/property", {
+            params: {
+              id,
+            },
+          });
       console.log("property fetched is", response.data);
       setProperty({ ...response.data, id });
       setLoading(false);
