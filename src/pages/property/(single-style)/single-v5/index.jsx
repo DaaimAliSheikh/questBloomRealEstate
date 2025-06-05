@@ -21,7 +21,6 @@ import PropertyGallery from "@/components/property/property-single-style/single-
 import MortgageCalculator from "@/components/property/property-single-style/common/MortgageCalculator";
 import WalkScore from "@/components/property/property-single-style/common/WalkScore";
 
-const isDev = import.meta.env.DEV;
 import MetaData from "@/components/common/MetaData";
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
