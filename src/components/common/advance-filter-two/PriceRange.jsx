@@ -1,15 +1,14 @@
-
 import React, { useState } from "react";
 import InputRange from "react-input-range";
 import "react-input-range/lib/css/index.css";
 
-const PriceRange = ({filterFunctions}) => {
-  const [price, setPrice] = useState({ value: { min: 20, max: 70987 } });
+const PriceRange = ({ filterFunctions, setPriceRange, priceRange }) => {
+  const [price, setPrice] = useState({ value: { min: 0, max: 10000000 } });
 
   // price range handler
   const handleOnChange = (value) => {
     setPrice({ value });
-    filterFunctions?.handlepriceRange([value.min,value.max])
+    setPriceRange([value.min, value.max]);
   };
 
   return (
@@ -17,18 +16,19 @@ const PriceRange = ({filterFunctions}) => {
       <div className="range-wrapper">
         <InputRange
           formatLabel={() => ``}
-          maxValue={100000}
+          maxValue={10000000}
           minValue={0}
-
-          value={{min:filterFunctions?.priceRange[0],max:filterFunctions?.priceRange[1]}}
+          value={{
+            min: priceRange[0],
+            max: priceRange[1],
+          }}
           onChange={(value) => handleOnChange(value)}
-
           id="slider"
         />
         <div className="d-flex align-items-center">
-          <span id="slider-range-value1">${price.value.min}</span>
+          <span id="slider-range-value1">AED {price.value.min}</span>
           <i className="fa-sharp fa-solid fa-minus mx-2 dark-color icon" />
-          <span id="slider-range-value2">${price.value.max}</span>
+          <span id="slider-range-value2">AED {price.value.max}</span>
         </div>
       </div>
     </>

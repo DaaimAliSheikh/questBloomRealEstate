@@ -2,12 +2,10 @@ import MobileMenu from "@/components/common/mobile-menu";
 import Partner from "@/components/common/Partner";
 import Agents from "@/components/home/home-v2/Agents";
 import ApartmentType from "@/components/home/home-v2/ApartmentType";
-import Explore from "@/components/home/home-v2/Explore";
 import ExploreCities from "@/components/home/home-v2/ExploreCities";
 import FeaturedListings from "@/components/home/home-v2/FeatuerdListings";
 import Header from "@/components/home/home-v2/Header";
 import Testimonial from "@/components/home/home-v2/Testimonial";
-import About from "@/components/home/home-v2/about";
 import Hero from "@/components/home/home-v2/hero";
 import React from "react";
 import Footer from "@/components/common/default-footer";
@@ -18,7 +16,7 @@ import { Link } from "react-router-dom";
 import MetaData from "@/components/common/MetaData";
 
 const metaInformation = {
-  title: "Home v2 || Homez - Real Estate ReactJS Template",
+  title: "Home",
 };
 
 const Home_V2 = () => {
@@ -35,8 +33,10 @@ const Home_V2 = () => {
       {/* Home Banner Style V2 */}
       <section className="home-banner-style2 p0">
         <div className="home-style2">
-          <div className="container maxw1600">
-            <div className="home2-hero-banner bdrs12"></div>
+          <div style={{}} className="container maxw1600 ">
+            <div className="d-flex justify-content-center">
+              <div className="home2-hero-banner mbdrs12"></div>
+            </div>
             <div className="row">
               <div className="col-xl-10 mx-auto">
                 <Hero />
@@ -72,7 +72,7 @@ const Home_V2 = () => {
             </div>
             <div className="col-lg-3">
               <div className="text-start text-lg-end mb-3">
-                <Link className="ud-btn2" to="/grid-full-3-col">
+                <Link className="ud-btn2" to="/off-plan">
                   See All Properties
                   <i className="fal fa-arrow-right-long" />
                 </Link>
@@ -147,7 +147,7 @@ const Home_V2 = () => {
       </section>
       {/* End property cities */}
       {/* Explore Apartment */}
-      <section className="p-0">
+      {/* <section className="p-0">
         <div className="how-we-help position-relative mx-auto bgc-thm-light maxw1600 pt120 pt60-md pb90 pb30-md bdrs12 mx20-lg">
           <div className="container">
             <div className="row">
@@ -163,21 +163,20 @@ const Home_V2 = () => {
                 </div>
               </div>
             </div>
-            {/* End .row */}
 
             <div className="row">
               <Explore />
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
       {/* End Explore Apartment */}
       {/* About Us */}
-      <section className="about-us">
+      {/* <section className="about-us">
         <div className="container">
           <About />
         </div>
-      </section>
+      </section> */}
       {/* End About Us */}
       {/* Our Testimonials */}
       <section className="our-testimonial p-0">

@@ -6,7 +6,6 @@ const PropertyDetails = ({ property }) => {
     if (!property?.unit_blocks || property.unit_blocks.length === 0) {
       return "N/A";
     }
-
     const bedrooms = [];
     property.unit_blocks.forEach((block) => {
       const name = block?.name?.toLowerCase() || "";
@@ -14,15 +13,13 @@ const PropertyDetails = ({ property }) => {
       // Skip studios
       if (name.includes("studio")) return;
 
-      if (name.includes("1,5") || name.includes("1.5")) {
-        bedrooms.push(1.5);
-      } else if (name.includes("2,5") || name.includes("2.5")) {
-        bedrooms.push(2.5);
-      } else {
-        const match = name.match(/(\d+)\s*bedroom/);
-        if (match) {
-          bedrooms.push(parseFloat(match[1]));
-        }
+      // Match patterns like "1.5 bedroom", "2,5 bedrooms", or just "2.5"
+      const match = name.match(/(\d+[.,]?\d*)\s*bedroom/);
+
+      if (match) {
+        // Replace comma with dot and parse as float
+        const bedroomCount = parseFloat(match[1].replace(",", "."));
+        bedrooms.push(bedroomCount);
       }
     });
 
@@ -90,7 +87,7 @@ const PropertyDetails = ({ property }) => {
   // Helper function to get price range
   const getPriceRange = () => {
     if (!property?.unit_blocks || property.unit_blocks.length === 0) {
-      return "N/A";
+      return "Ask for price";
     }
 
     const prices = property.unit_blocks
@@ -101,7 +98,7 @@ const PropertyDetails = ({ property }) => {
       )
       .map((block) => parseFloat(block.units_price_from_aed));
 
-    if (prices.length === 0) return "N/A";
+    if (prices.length === 0) return "Ask for price";
 
     const min = Math.min(...prices);
     const max = Math.max(...prices);

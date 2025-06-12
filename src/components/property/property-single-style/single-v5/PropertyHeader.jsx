@@ -3,7 +3,7 @@ import React from "react";
 const PropertyHeader = ({ property }) => {
   // Helper function to format price
   const formatPrice = (price) => {
-    if (!price) return "Price on request";
+    if (!price) return "Ask for price";
     return `${Math.round(price).toLocaleString()}`;
   };
 
@@ -42,7 +42,7 @@ const PropertyHeader = ({ property }) => {
         }
       }
     }
-    return "N/A";
+    return "Ask for price";
   };
 
   // Get area range for price per sqft calculation
@@ -173,7 +173,9 @@ const PropertyHeader = ({ property }) => {
               }}
               className="price mb-0"
             >
-              {"AED " + getPriceDisplay()}
+              {getPriceDisplay() === "Ask for price"
+                ? "Ask for price"
+                : "AED " + getPriceDisplay()}
             </h3>
             {property?.unit_blocks && property?.unit_blocks.length > 0 && (
               <p
@@ -182,14 +184,21 @@ const PropertyHeader = ({ property }) => {
                   textShadow: "0px 0px 7px rgba(0, 0, 0, 0.7)",
                 }}
               >
-                Starting from{" "}
-                {formatPrice(
-                  Math.min(
-                    ...property?.unit_blocks
-                      .filter((block) => block.units_price_from_aed)
-                      .map((block) => block.units_price_from_aed)
-                  ) / getAreaDisplay() || "N/A"
-                ) + " AED/sqft"}
+                {Math.min(
+                  ...property?.unit_blocks
+                    .filter((block) => block.units_price_from_aed)
+                    .map((block) => block.units_price_from_aed)
+                ) !== Infinity
+                  ? "Starting from AED " +
+                    Math.floor(
+                      Math.min(
+                        ...property?.unit_blocks
+                          .filter((block) => block.units_price_from_aed)
+                          .map((block) => block.units_price_from_aed)
+                      ) / getAreaDisplay()
+                    ) +
+                    " per sqft"
+                  : ""}
               </p>
             )}
           </div>

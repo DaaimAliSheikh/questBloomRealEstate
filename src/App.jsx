@@ -67,6 +67,7 @@ import AgentSingle from "./pages/property/(agents)/agent-single";
 import AgencySingle from "./pages/property/(agents)/agency-single";
 import ListV1 from "./pages/listings/(list-view)/list-v1";
 import ScrollTopBehaviour from "./components/common/ScrollTopBehaviour";
+import SearchProperties from "./pages/listings/(map-style)/search-properties";
 
 if (typeof window !== "undefined") {
   import("bootstrap");
@@ -89,7 +90,7 @@ function App() {
             <Route path="/">
               <Route index element={<Home_V2 />} />
 
-              <Route path="home-v2" element={<Home_V2 />} />
+              <Route path="home" element={<Home_V2 />} />
               <Route path="home-v3" element={<Home_V3 />} />
               <Route path="home-v4" element={<Home_V4 />} />
               <Route path="home-v5" element={<Home_V5 />} />
@@ -100,7 +101,7 @@ function App() {
               <Route path="home-v10" element={<Home_V10 />} />
 
               <Route path="grid-default" element={<GridDefault />} />
-              <Route path="grid-full-3-col" element={<GridFull3Col />} />
+              <Route path="off-plan" element={<GridFull3Col />} />
               <Route path="grid-full-4-col" element={<GridFull4Col />} />
               <Route path="grid-full-2-col" element={<GridFull2Col />} />
               <Route path="grid-full-1-col-v1" element={<GridFull1ColV1 />} />
@@ -111,8 +112,16 @@ function App() {
               <Route path="list-v1" element={<ListV1 />} />
 
               <Route
-                path="header-map-style/:region"
+                path="city-properties/:region"
                 element={<HeaderMapStyle />}
+              />
+              <Route
+                path="search-properties/:search"
+                element={<SearchProperties />}
+              />
+              <Route
+                path="search-properties"
+                element={<SearchProperties />}
               />
               <Route path="map-v1" element={<MapV1 />} />
               <Route path="map-v2" element={<MapV2 />} />
@@ -171,7 +180,7 @@ function App() {
               <Route path="single-v2/:id" element={<SingleV2 />} />
               <Route path="single-v3/:id" element={<SingleV3 />} />
               <Route path="single-v4/:id" element={<SingleV4 />} />
-              <Route path="single-v5/:id" element={<SingleV5 />} />
+              <Route path="off-plan/:id" element={<SingleV5 />} />
               <Route path="single-v6/:id" element={<SingleV6 />} />
               <Route path="single-v7/:id" element={<SingleV7 />} />
               <Route path="single-v8/:id" element={<SingleV8 />} />

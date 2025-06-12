@@ -1,42 +1,74 @@
-
 import Select from "react-select";
 import PriceRange from "./PriceRange";
 import Bedroom from "./Bedroom";
 import Bathroom from "./Bathroom";
 import Amenities from "./Amenities";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const AdvanceFilterModal = ({ filterFunctions }) => {
-  const catOptions = [
-    { value: "Houses", label: "Houses" },
-    { value: "Office", label: "Office" },
-    { value: "Apartments", label: "Apartments" },
-    { value: "Villa", label: "Villa" },
-  ];
-
-  const locationOptions = [
-    { value: "All Cities", label: "All Cities" },
-    { value: "California", label: "California" },
-    { value: "Los Angeles", label: "Los Angeles" },
-    { value: "New Jersey", label: "New Jersey" },
-    { value: "New York", label: "New York" },
-    { value: "San Diego", label: "San Diego" },
-    { value: "San Francisco", label: "San Francisco" },
-    { value: "Texas", label: "Texas" },
-  ];
-
+const AdvanceFilterModal = ({
+  filterFunctions,
+  propertyTypes,
+  locationOptions,
+  facilityOptions,
+  searchTerm,
+  setPageNumber,
+  loading,
+  setDataFetched,
+}) => {
+  const navigate = useNavigate();
+  // console.log(filterFunctions?.location, locationOptions)
   const customStyles = {
     option: (styles, { isFocused, isSelected, isHovered }) => {
       return {
         ...styles,
         backgroundColor: isSelected
-          ? "#eb6753"
+          ? "#797631"
           : isHovered
-          ? "#eb675312"
+          ? "#DDE5C2"
           : isFocused
-          ? "#eb675312"
+          ? "#DDE5C2"
           : undefined,
       };
     },
+  };
+  ///local state befrore actually applying filter
+  const [propertyType, setPropertyType] = useState(
+    filterFunctions?.selectedPropertyType || "All Property Types"
+  );
+  const [priceRange, setPriceRange] = useState(
+    filterFunctions?.priceRange || [0, 10000000]
+  );
+  const [propertyId, setPropertyId] = useState(
+    filterFunctions?.propertyId || ""
+  );
+  const [location, setLocation] = useState(
+    filterFunctions?.location || "All Locations"
+  );
+  const [squareFeet, setSquareFeet] = useState(
+    filterFunctions?.squirefeet.length === 0
+      ? [0, 0]
+      : filterFunctions?.squirefeet
+  );
+  const [bedroomCount, setBedroomCount] = useState(
+    filterFunctions?.bedrooms || 0
+  );
+  const [amenities, setAmenities] = useState(filterFunctions?.categories || []);
+
+  const handleSearch = () => {
+    setDataFetched(false); ////
+    console.log("requesting", propertyType, propertyId, location, squareFeet);
+    filterFunctions?.handlepropertyType(propertyType);
+    filterFunctions?.handlePropertyId(propertyId);
+    filterFunctions?.handlelocation(location);
+    filterFunctions?.handlesquirefeet(squareFeet);
+    filterFunctions?.handlebedrooms(bedroomCount);
+    filterFunctions?.handlecategories(amenities);
+    filterFunctions?.handlepriceRange(priceRange);
+    if (setPageNumber) setPageNumber(1);
+    searchTerm
+      ? navigate("/search-properties/" + searchTerm)
+      : navigate("/search-properties/");
   };
 
   return (
@@ -61,7 +93,11 @@ const AdvanceFilterModal = ({ filterFunctions }) => {
               <div className="widget-wrapper">
                 <h6 className="list-title mb20">Price Range</h6>
                 <div className="range-slider-style modal-version">
-                  <PriceRange filterFunctions={filterFunctions} />
+                  <PriceRange
+                    setPriceRange={setPriceRange}
+                    priceRange={priceRange}
+                    filterFunctions={filterFunctions}
+                  />
                 </div>
               </div>
             </div>
@@ -74,13 +110,15 @@ const AdvanceFilterModal = ({ filterFunctions }) => {
                 <h6 className="list-title">Type</h6>
                 <div className="form-style2 input-group">
                   <Select
-                    defaultValue={[catOptions[1]]}
+                    defaultValue={propertyTypes[0] || null}
                     name="colors"
-                    options={catOptions}
+                    options={propertyTypes}
                     styles={customStyles}
-                    onChange={(e) =>
-                      filterFunctions?.setPropertyTypes([e.value])
-                    }
+                    value={{
+                      value: propertyType,
+                      label: propertyType,
+                    }}
+                    onChange={(e) => setPropertyType(e.value)}
                     className="select-custom"
                     classNamePrefix="select"
                     required
@@ -96,8 +134,9 @@ const AdvanceFilterModal = ({ filterFunctions }) => {
                 <div className="form-style2">
                   <input
                     type="text"
-                    className="form-control"
+                    className="form-control property-id-reset"
                     placeholder="RT04949213"
+                    onChange={(e) => setPropertyId(e.target.value)}
                   />
                 </div>
               </div>
@@ -111,20 +150,23 @@ const AdvanceFilterModal = ({ filterFunctions }) => {
               <div className="widget-wrapper">
                 <h6 className="list-title">Bedrooms</h6>
                 <div className="d-flex">
-                  <Bedroom filterFunctions={filterFunctions} />
+                  <Bedroom
+                    setBedroomCount={setBedroomCount}
+                    bedroomCount={bedroomCount}
+                  />
                 </div>
               </div>
             </div>
             {/* End .col-md-6 */}
 
-            <div className="col-sm-6">
+            {/* <div className="col-sm-6">
               <div className="widget-wrapper">
                 <h6 className="list-title">Bathrooms</h6>
                 <div className="d-flex">
                   <Bathroom filterFunctions={filterFunctions} />
                 </div>
               </div>
-            </div>
+            </div> */}
             {/* End .col-md-6 */}
           </div>
           {/* End .row */}
@@ -135,17 +177,19 @@ const AdvanceFilterModal = ({ filterFunctions }) => {
                 <h6 className="list-title">Location</h6>
                 <div className="form-style2 input-group">
                   <Select
-                    defaultValue={[locationOptions[0]]}
+                    defaultValue={locationOptions[0] || null}
                     name="colors"
                     styles={customStyles}
                     options={locationOptions}
                     className="select-custom filterSelect"
                     value={{
-                      value: filterFunctions?.location,
-                      label: filterFunctions?.location,
+                      value: location,
+                      label: locationOptions.find(
+                        (option) => option.value === location
+                      )?.label,
                     }}
                     classNamePrefix="select"
-                    onChange={(e) => filterFunctions?.handlelocation(e.value)}
+                    onChange={(e) => setLocation(e.value)}
                     required
                   />
                 </div>
@@ -163,10 +207,7 @@ const AdvanceFilterModal = ({ filterFunctions }) => {
                         type="number"
                         className="form-control filterInput"
                         onChange={(e) =>
-                          filterFunctions?.handlesquirefeet([
-                            e.target.value,
-                            document.getElementById("maxFeet3").value / 1,
-                          ])
+                          setSquareFeet([Number(e.target.value), squareFeet[1]])
                         }
                         placeholder="Min."
                         id="minFeet3"
@@ -180,10 +221,7 @@ const AdvanceFilterModal = ({ filterFunctions }) => {
                         placeholder="Max"
                         id="maxFeet3"
                         onChange={(e) =>
-                          filterFunctions?.handlesquirefeet([
-                            document.getElementById("minFeet3").value / 1,
-                            e.target.value,
-                          ])
+                          setSquareFeet([squareFeet[0], Number(e.target.value)])
                         }
                       />
                     </div>
@@ -195,27 +233,68 @@ const AdvanceFilterModal = ({ filterFunctions }) => {
           </div>
           {/* End .row */}
 
-          <div className="row">
+          {/* <div className="row">
             <div className="col-lg-12">
               <div className="widget-wrapper mb0">
                 <h6 className="list-title mb10">Amenities</h6>
               </div>
             </div>
-            <Amenities filterFunctions={filterFunctions} />
-          </div>
+
+            {loading ? (
+              <div
+                className="row"
+                style={{ marginTop: "100px", marginBottom: "100px" }}
+              >
+                <div className="spinner-border mx-auto " role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            ) : facilityOptions.length === 0 ? (
+              <h5
+                style={{ marginTop: "100px", marginBottom: "100px" }}
+                className=" text-center "
+              >
+                No Amenities found.
+              </h5>
+            ) : (
+              <Amenities
+                facilityOptions={facilityOptions}
+                amenities={amenities}
+                setAmenities={setAmenities}
+              />
+            )}
+          </div> */}
         </div>
         {/* End modal body */}
 
         <div className="modal-footer justify-content-between">
           <button
             className="reset-button"
-            onClick={() => filterFunctions?.resetFilter()}
+            data-bs-dismiss="modal"
+            onClick={() => {
+              filterFunctions?.resetFilter();
+              setBedroomCount(0);
+              setSquareFeet([0, 0]);
+              setAmenities([]);
+              setLocation("All Locations");
+              setPropertyId("");
+              setPropertyType("All Property Types");
+              setDataFetched(false);
+              setPageNumber(1);
+              setPriceRange([0, 10000000]);
+              setSquareFeet([0, 0]);
+            }}
           >
             <span className="flaticon-turn-back" />
             <u>Reset all filters</u>
           </button>
           <div className="btn-area">
-            <button type="submit" className="ud-btn btn-thm">
+            <button
+              type="button"
+              className="ud-btn btn-thm"
+              data-bs-dismiss="modal"
+              onClick={handleSearch}
+            >
               <span className="flaticon-search align-text-top pr10" />
               Search
             </button>

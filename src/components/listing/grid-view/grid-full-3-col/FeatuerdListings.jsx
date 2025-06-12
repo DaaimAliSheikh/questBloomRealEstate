@@ -41,15 +41,15 @@ const FeaturedListings = ({ data, colstyle }) => {
               </div>
 
               <div className="list-price">
-                {"AED " +
-                  (Number(listing.price.split("$")[1]) === 0
-                    ? "N/A"
-                    : Number(listing.price.split("$")[1]).toLocaleString())}
+                {Number(listing.price.split("$")[1]) === 0
+                  ? "Ask for price"
+                  : "AED " +
+                    Number(listing.price.split("$")[1]).toLocaleString()}
               </div>
             </div>
             <div className="list-content">
               <h6 className="list-title">
-                <Link to={`/single-v5/${listing.id}`}>{listing.title}</Link>
+                <Link to={`/off-plan/${listing.id}`}>{listing.title}</Link>
               </h6>
               <p className="list-text">{listing.location}</p>
               <div className="list-meta d-flex align-items-center">
