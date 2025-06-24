@@ -12,8 +12,7 @@ import { useEffect, useState } from "react";
 const MainMenu = () => {
   const { pathname } = useLocation();
 
-  const [topMenu, setTopMenu] = useState("");
-  const [submenu, setSubmenu] = useState("");
+  const [topMenu, setTopMenu] = useState("home");
 
   useEffect(() => {
     if ("home" == pathname.split("/")[1]) {
@@ -32,6 +31,16 @@ const MainMenu = () => {
 
     if ("agents" == pathname.split("/")[1]) {
       setTopMenu("agents");
+    }
+
+    if ("buy" == pathname.split("/")[1]) {
+      setTopMenu("buy");
+    }
+    if ("listings" == pathname.split("/")[1]) {
+      setTopMenu("listings");
+    }
+    if ("rent" == pathname.split("/")[1]) {
+      setTopMenu("rent");
     }
 
     // blogItems.forEach((elm) => {
@@ -60,19 +69,32 @@ const MainMenu = () => {
   //   }
   // };
   return (
-    <ul className="ace-responsive-menu">
-      <li className="">
-        <a className="list-item" href="#">
-          <Link
-            className={topMenu == "home" ? "title menuActive" : "title"}
-            to={"/home"}
+    <>
+      <style>{`
+  .title:hover {
+    color: #a3a075; /* Adjusted lighter shade of #797631 */
+    }
+    `}</style>
+      <ul className="ace-responsive-menu">
+        <li className="">
+          <div
+            style={{
+              borderRadius: "60px",
+              textAlign: "center",
+              padding: "18px 20px 18px 5px",
+            }}
           >
-            Home
-          </Link>
-          {/* <span className="arrow"></span> */}
-        </a>
-        {/* Level Two*/}
-        {/* <ul className="sub-menu">
+            <Link
+              className={topMenu == "home" ? "title  menuActive" : "title"}
+              id="menu-title-hover"
+              to={"/home"}
+            >
+              Home
+            </Link>
+            {/* <span className="arrow"></span> */}
+          </div>
+          {/* Level Two*/}
+          {/* <ul className="sub-menu">
           {homeItems.map((item, index) => (
             <li key={index}>
               <Link className={`${handleActive(item.href)}`} to={item.href}>
@@ -81,22 +103,30 @@ const MainMenu = () => {
             </li>
           ))}
         </ul> */}
-      </li>
-      {/* End homeItems */}
+        </li>
+        {/* End homeItems */}
 
-      <li className="">
-        <a className="list-item" href="#">
-          <span>
-            <Link
-              className={topMenu == "listing" ? "title menuActive" : "title"}
-              to={"/off-plan"}
-            >
-              Off-Plan
-            </Link>
-          </span>
-          {/* <span className="arrow"></span> */}
-        </a>
-        {/* <ul className="row dropdown-megamenu sub-menu">
+        <li className="">
+          <div
+            style={{
+              borderRadius: "60px",
+              textAlign: "center",
+              padding: "18px 20px 18px 5px",
+            }}
+          >
+            <span>
+              <Link
+                className={topMenu === "listing" ? "title menuActive" : "title"}
+                id="menu-title-hover"
+                to={"/off-plan"}
+              >
+                Off-Plan
+              </Link>
+            </span>
+            {/* <span className="arrow"></span> */}
+          </div>
+
+          {/* <ul className="row dropdown-megamenu sub-menu">
           {listingItems.map((item, index) => (
             <li className="col mega_menu_list" key={index}>
               <h4 className="title">{item.title}</h4>
@@ -115,90 +145,134 @@ const MainMenu = () => {
             </li>
           ))}
         </ul> */}
-      </li>
+        </li>
 
-      <li className="">
-        <a className="list-item" href="#">
-          <span>
-            <Link
-              className={topMenu == "buy" ? "title menuActive" : "title"}
-              to={"#"}
-            >
-              Buy
-            </Link>
-          </span>
-          {/* <span className="arrow"></span> */}
-        </a>
-      </li>
-      <li className="">
-        <a className="list-item" href="#">
-          <span>
-            <Link
-              className={topMenu == "offplan" ? "title menuActive" : "title"}
-              to={"#"}
-            >
-              Listings
-            </Link>
-          </span>
-          {/* <span className="arrow"></span> */}
-        </a>
-      </li>
+        <li className="">
+          <div
+            style={{
+              borderRadius: "60px",
+              textAlign: "center",
+              padding: "18px 20px 18px 5px",
+            }}
+          >
+            <span>
+              <Link
+                className={topMenu == "buy" ? "title menuActive" : "title"}
+                to={"/buy"}
+                id="menu-title-hover"
+              >
+                Buy
+              </Link>
+            </span>
+            {/* <span className="arrow"></span> */}
+          </div>
+        </li>
+        <li className="">
+          <div
+            style={{
+              borderRadius: "60px",
+              textAlign: "center",
+              padding: "18px 20px 18px 5px",
+            }}
+          >
+            <span>
+              <Link
+                className={topMenu == "listings" ? "title menuActive" : "title"}
+                to={"/listings"}
+                id="menu-title-hover"
+              >
+                Listings
+              </Link>
+            </span>
+            {/* <span className="arrow"></span> */}
+          </div>
+        </li>
 
-      <li className="">
-        <a className="list-item" href="#">
-          <span>
-            <Link
-              className={topMenu == "luxury" ? "title menuActive" : "title"}
-              to={"#"}
-            >
-              Rent
-            </Link>
-          </span>
-          {/* <span className="arrow"></span> */}
-        </a>
-      </li>
-      <li className="">
-        <a className="list-item" href="#">
-          <span>
-            <Link
-              className={topMenu == "agents" ? "title menuActive" : "title"}
-              to={"/agents"}
-            >
-              Agents
-            </Link>
-          </span>
-          {/* <span className="arrow"></span> */}
-        </a>
-      </li>
+        <li className="">
+          <div
+            style={{
+              borderRadius: "60px",
+              textAlign: "center",
+              padding: "18px 20px 18px 5px",
+            }}
+          >
+            <span>
+              <Link
+                className={topMenu == "rent" ? "title menuActive" : "title"}
+                to={"/rent"}
+                id="menu-title-hover"
+              >
+                Rent
+              </Link>
+            </span>
+            {/* <span className="arrow"></span> */}
+          </div>
+        </li>
+        <li className="">
+          <div
+            style={{
+              borderRadius: "60px",
+              textAlign: "center",
+              padding: "18px 20px 18px 5px",
+            }}
+          >
+            <span>
+              <Link
+                className={topMenu == "agents" ? "title menuActive" : "title"}
+                to={"/agents"}
+                id="menu-title-hover"
+              >
+                Agents
+              </Link>
+            </span>
+            {/* <span className="arrow"></span> */}
+          </div>
+        </li>
 
-      <li className="">
-        <a className="list-item" href="#">
-          <span>
-            <Link
-              className={topMenu == "whoweare" ? "title menuActive" : "title"}
-              to={"/about"}
-            >
-              Who We Are
-            </Link>
-          </span>
-          {/* <span className="arrow"></span> */}
-        </a>
-      </li>
-      <li className="">
-        <a className="list-item" href="#">
-          <span>
-            <Link
-              className={topMenu == "contactus" ? "title menuActive" : "title"}
-              to={"/contact"}
-            >
-              Contact Us
-            </Link>
-          </span>
-          {/* <span className="arrow"></span> */}
-        </a>
-      </li>
+        <li className="">
+          <div
+            style={{
+              borderRadius: "60px",
+              textAlign: "center",
+              padding: "18px 20px 18px 5px",
+            }}
+          >
+            <span>
+              <Link
+                className={topMenu == "whoweare" ? "title menuActive" : "title"}
+                to={"/about"}
+                id="menu-title-hover"
+              >
+                Who We Are
+              </Link>
+            </span>
+            {/* <span className="arrow"></span> */}
+          </div>
+        </li>
+        <li className="">
+          <div
+            style={{
+              borderRadius: "60px",
+              textAlign: "center",
+              padding: "18px 20px 18px 5px",
+            }}
+          >
+            <span>
+              <Link
+                className={
+                  topMenu == "contactus" ? "title menuActive" : "title"
+                }
+                to={"/contact"}
+                id="menu-title-hover"
+              >
+                Contact Us
+              </Link>
+            </span>
+            {/* <span className="arrow"></span> */}
+          </div>
+        </li>
 
-      {/* <li className="visible_list dropitem">
+        {/* <li className="visible_list dropitem">
         <a className="list-item" href="#">
           <span
             className={topMenu == "property" ? "title menuActive" : "title"}
@@ -272,7 +346,8 @@ const MainMenu = () => {
           ))}
         </ul>
       </li> */}
-    </ul>
+      </ul>
+    </>
   );
 };
 

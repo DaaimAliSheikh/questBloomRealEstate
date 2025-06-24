@@ -2,9 +2,8 @@ import Select from "react-select";
 import PriceRange from "./PriceRange";
 import Bedroom from "./Bedroom";
 import Bathroom from "./Bathroom";
-import Amenities from "./Amenities";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+
+import { useEffect, useState } from "react";
 
 const AdvanceFilterModal = ({
   filterFunctions,
@@ -12,11 +11,9 @@ const AdvanceFilterModal = ({
   locationOptions,
   facilityOptions,
   searchTerm,
-  setPageNumber,
   loading,
   setDataFetched,
 }) => {
-  const navigate = useNavigate();
   // console.log(filterFunctions?.location, locationOptions)
   const customStyles = {
     option: (styles, { isFocused, isSelected, isHovered }) => {
@@ -33,27 +30,54 @@ const AdvanceFilterModal = ({
     },
   };
   ///local state befrore actually applying filter
-  const [propertyType, setPropertyType] = useState(
-    filterFunctions?.selectedPropertyType || "All Property Types"
-  );
-  const [priceRange, setPriceRange] = useState(
-    filterFunctions?.priceRange || [0, 10000000]
-  );
-  const [propertyId, setPropertyId] = useState(
-    filterFunctions?.propertyId || ""
-  );
-  const [location, setLocation] = useState(
-    filterFunctions?.location || "All Locations"
-  );
-  const [squareFeet, setSquareFeet] = useState(
-    filterFunctions?.squirefeet.length === 0
-      ? [0, 0]
-      : filterFunctions?.squirefeet
-  );
-  const [bedroomCount, setBedroomCount] = useState(
-    filterFunctions?.bedrooms || 0
-  );
-  const [amenities, setAmenities] = useState(filterFunctions?.categories || []);
+
+  const [propertyType, setPropertyType] = useState("All Property Types");
+  const [priceRange, setPriceRange] = useState([0, 10000000]);
+  const [propertyId, setPropertyId] = useState("");
+  const [location, setLocation] = useState("All Locations");
+  const [squareFeet, setSquareFeet] = useState([0, 0]);
+  const [bedroomCount, setBedroomCount] = useState(0);
+  const [bathroomCount, setBathroomCount] = useState(0);
+  const [amenities, setAmenities] = useState([]);
+
+  useEffect(() => {
+    if (!filterFunctions) return;
+
+    if (filterFunctions.selectedPropertyType)
+      setPropertyType(filterFunctions.selectedPropertyType);
+
+    if (filterFunctions.priceRange) setPriceRange(filterFunctions.priceRange);
+
+    if (filterFunctions.propertyId !== undefined)
+      setPropertyId(filterFunctions.propertyId);
+
+    if (filterFunctions.location) setLocation(filterFunctions.location);
+
+    if (Array.isArray(filterFunctions.squirefeet))
+      setSquareFeet(
+        filterFunctions.squirefeet.length === 0
+          ? [0, 0]
+          : filterFunctions.squirefeet
+      );
+
+    if (filterFunctions.bedrooms !== undefined)
+      setBedroomCount(filterFunctions.bedrooms);
+
+    if (filterFunctions.bathrooms !== undefined)
+      setBathroomCount(filterFunctions.bathrooms);
+
+    if (Array.isArray(filterFunctions.categories))
+      setAmenities(filterFunctions.categories);
+  }, [
+    filterFunctions?.selectedPropertyType,
+    filterFunctions?.priceRange,
+    filterFunctions?.propertyId,
+    filterFunctions?.location,
+    filterFunctions?.squirefeet,
+    filterFunctions?.bedrooms,
+    filterFunctions?.bathrooms,
+    filterFunctions?.categories,
+  ]);
 
   const handleSearch = () => {
     setDataFetched(false); ////
@@ -63,12 +87,10 @@ const AdvanceFilterModal = ({
     filterFunctions?.handlelocation(location);
     filterFunctions?.handlesquirefeet(squareFeet);
     filterFunctions?.handlebedrooms(bedroomCount);
+    filterFunctions?.handleBathrooms(bathroomCount);
     filterFunctions?.handlecategories(amenities);
     filterFunctions?.handlepriceRange(priceRange);
-    if (setPageNumber) setPageNumber(1);
-    searchTerm
-      ? navigate("/search-properties/" + searchTerm)
-      : navigate("/search-properties/");
+
   };
 
   return (
@@ -110,7 +132,6 @@ const AdvanceFilterModal = ({
                 <h6 className="list-title">Type</h6>
                 <div className="form-style2 input-group">
                   <Select
-                    defaultValue={propertyTypes[0] || null}
                     name="colors"
                     options={propertyTypes}
                     styles={customStyles}
@@ -158,15 +179,17 @@ const AdvanceFilterModal = ({
               </div>
             </div>
             {/* End .col-md-6 */}
-
-            {/* <div className="col-sm-6">
+            <div className="col-sm-6">
               <div className="widget-wrapper">
                 <h6 className="list-title">Bathrooms</h6>
                 <div className="d-flex">
-                  <Bathroom filterFunctions={filterFunctions} />
+                  <Bathroom
+                    setBathroomCount={setBathroomCount}
+                    bathroomCount={bathroomCount}
+                  />
                 </div>
               </div>
-            </div> */}
+            </div>
             {/* End .col-md-6 */}
           </div>
           {/* End .row */}
@@ -177,7 +200,6 @@ const AdvanceFilterModal = ({
                 <h6 className="list-title">Location</h6>
                 <div className="form-style2 input-group">
                   <Select
-                    defaultValue={locationOptions[0] || null}
                     name="colors"
                     styles={customStyles}
                     options={locationOptions}
@@ -274,13 +296,13 @@ const AdvanceFilterModal = ({
             onClick={() => {
               filterFunctions?.resetFilter();
               setBedroomCount(0);
+              setBathroomCount(0);
               setSquareFeet([0, 0]);
               setAmenities([]);
               setLocation("All Locations");
               setPropertyId("");
               setPropertyType("All Property Types");
               setDataFetched(false);
-              setPageNumber(1);
               setPriceRange([0, 10000000]);
               setSquareFeet([0, 0]);
             }}

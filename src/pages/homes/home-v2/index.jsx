@@ -3,23 +3,113 @@ import Partner from "@/components/common/Partner";
 import Agents from "@/components/home/home-v2/Agents";
 import ApartmentType from "@/components/home/home-v2/ApartmentType";
 import ExploreCities from "@/components/home/home-v2/ExploreCities";
-import FeaturedListings from "@/components/home/home-v2/FeatuerdListings";
+import FeaturedListingsHome from "@/components/home/home-v2/FeatuerdListingsHome";
 import Header from "@/components/home/home-v2/Header";
 import Testimonial from "@/components/home/home-v2/Testimonial";
-import Hero from "@/components/home/home-v2/hero";
-import React from "react";
+import React, { useState } from "react";
 import Footer from "@/components/common/default-footer";
 import Cta from "@/components/home/home-v2/Cta";
 
 import { Link } from "react-router-dom";
 
 import MetaData from "@/components/common/MetaData";
+import AutoCarouselHero from "@/components/home/home-v2/hero/AutoCarouselHero";
+import Hero from "@/components/home/home-v3/hero";
 
 const metaInformation = {
   title: "Home",
 };
 
+const beachAreaProperties = [
+  {
+    id: 139,
+    name: "Al Raha Beach, Abu Dhabi",
+  },
+
+  {
+    id: 119,
+    name: "Emaar Beachfront",
+  },
+  {
+    id: 63,
+    name: "Jumeirah Beach Residence (JBR)",
+  },
+];
+
+const sobhaDeveloper = {
+  id: 56,
+  name: "Sobha",
+  website: "https://www.sobharealty.com/",
+};
+
 const Home_V2 = () => {
+  // const [visibleSections, setVisibleSections] = useState(0);
+  const sections = [
+    {
+      title: "Villas",
+      paragraph: "Luxury villas with premium amenities and stunning views",
+      params: {
+        unit_types: "Villa,Villas",
+      },
+    },
+    {
+      title: "Apartments",
+      paragraph:
+        "Modern apartments in prime locations with excellent facilities",
+      params: {
+        unit_types: "Townhouse",
+      },
+    },
+    {
+      title: "Beachfront Properties",
+      paragraph: "Premium Beachfront Properties",
+      params: {
+        areas: beachAreaProperties.map((item) => item.id).join(","),
+      },
+    },
+    {
+      title: "Properties by Sobha",
+      paragraph: "Premium Properties by Sobha with excellent facilities",
+      params: {
+        developer: String(sobhaDeveloper.id),
+      },
+    },
+    {
+      title: "Properties under 1 Million",
+      paragraph:
+        "Explore handpicked premium homes that offer great value for less than AED 1 Million",
+      params: {
+        unit_price_to: 1000000,
+      },
+    },
+    {
+      title: "Properties between 1 Million to 2 Million",
+      paragraph:
+        "Step into luxury with a curated selection of upscale properties priced between AED 1 Million and 2 Million",
+      params: {
+        unit_price_from: 1000000,
+        unit_price_to: 2000000,
+      },
+    },
+  ];
+  // const handleViewMore = () => {
+  //   setShowAllSections(true);
+  // };
+
+  // const getButtonText = () => {
+  //   if (visibleSections === sections.length) {
+  //     return "Collapse All";
+  //   }
+  //   return "View More Properties";
+  // };
+
+  // const getButtonIcon = () => {
+  //   if (visibleSections === sections.length) {
+  //     return "fa-arrow-up-long";
+  //   }
+  //   return "fa-arrow-down-long";
+  // };
+
   return (
     <>
       {" "}
@@ -31,24 +121,10 @@ const Home_V2 = () => {
       <MobileMenu />
       {/* End Mobile Nav  */}
       {/* Home Banner Style V2 */}
-      <section className="home-banner-style2 p0">
-        <div className="home-style2">
-          <div style={{}} className="container maxw1600 ">
-            <div className="d-flex justify-content-center">
-              <div className="home2-hero-banner mbdrs12"></div>
-            </div>
-            <div className="row">
-              <div className="col-xl-10 mx-auto">
-                <Hero />
-              </div>
-            </div>
-          </div>
-          {/* End .container */}
-        </div>
-      </section>
+      <AutoCarouselHero />
       {/* End Home Banner Style V2 */}
       {/* Explore Apartment */}
-      <section className="pb90 pb30-md">
+      <section className="pb90 pb30-md z-1">
         <div className="container">
           <div className="row justify-content-center" data-aos="fade">
             <div className="col-lg-12">
@@ -59,40 +135,23 @@ const Home_V2 = () => {
       </section>
       {/* End Explore Apartment */}
       {/* Featured Listings */}
-      <section className="pt0 pb60 pb30-md bgc-white">
-        <div className="container">
-          <div className="row align-items-center" data-aos="fade-up">
-            <div className="col-lg-9">
-              <div className="main-title2">
-                <h2 className="title">Discover Our Featured Listings</h2>
-                <p className="paragraph">
-                  Aliquam lacinia diam quis lacus euismod
-                </p>
-              </div>
-            </div>
-            <div className="col-lg-3">
-              <div className="text-start text-lg-end mb-3">
-                <Link className="ud-btn2" to="/off-plan">
-                  See All Properties
-                  <i className="fal fa-arrow-right-long" />
-                </Link>
-              </div>
-            </div>
-          </div>
-          {/* End header */}
+      <>
+        {/* Additional Sections - Show all at once with fade animation */}
+        {sections.map((section, index) => (
+          <FeaturedListingsHome section={section} index={index} />
+        ))}
+        {/* Main Featured Listings Section */}
 
-          <div className="row">
-            <div className="col-lg-12" data-aos="fade-up" data-aos-delay="200">
-              <div className="feature-listing-slider">
-                <FeaturedListings />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+        <FeaturedListingsHome
+          section={{
+            title: "Featured Listings",
+            paragraph: " Premium homes designed to match your lifestyle",
+          }}
+        />
+      </>
       {/* Explore Featured Listings */}
       {/* Property Cities */}
-      <section className="pt0 pb90 pb50-md">
+      <section className="pt0 pb70 pt40 pb50-md">
         <div className="container">
           <div className="row  justify-content-between align-items-center">
             <div className="col-auto">
@@ -180,7 +239,7 @@ const Home_V2 = () => {
       {/* End About Us */}
       {/* Our Testimonials */}
       <section className="our-testimonial p-0">
-        <div className="cta-banner2 bgc-f7 maxw1600 mx-auto pt110 pt60-md pb110 pb60-md bdrs12 position-relative">
+        <div className="cta-banner2 bgc-f7 maxw1600 mx-auto pt60 pt60-md pb110 pb60-md bdrs12 position-relative">
           <div className="container">
             <div className="row">
               <div
@@ -190,9 +249,7 @@ const Home_V2 = () => {
               >
                 <div className="main-title text-center">
                   <h2>Testimonials</h2>
-                  <p className="paragraph">
-                    10,000+ unique online course list designs
-                  </p>
+                  <p className="paragraph">What our customers saying</p>
                 </div>
               </div>
             </div>
@@ -212,7 +269,7 @@ const Home_V2 = () => {
       </section>
       {/* End Our Testimonials */}
       {/* Exclusive Agents */}
-      <section className="pb90">
+      {/* <section className="pb90">
         <div className="container">
           <div className="row  justify-content-between align-items-center">
             <div className="col-auto">
@@ -227,7 +284,6 @@ const Home_V2 = () => {
                 </p>
               </div>
             </div>
-            {/* End header */}
 
             <div className="col-auto mb30">
               <div className="row align-items-center justify-content-center">
@@ -236,24 +292,19 @@ const Home_V2 = () => {
                     <i className="far fa-arrow-left-long" />
                   </button>
                 </div>
-                {/* End prev */}
 
                 <div className="col-auto">
                   <div className="pagination swiper--pagination agent_pagination__active" />
                 </div>
-                {/* End pagination */}
 
                 <div className="col-auto">
                   <button className="agent_next__active swiper_button">
                     <i className="far fa-arrow-right-long" />
                   </button>
                 </div>
-                {/* End Next */}
               </div>
             </div>
-            {/* End .col for navigation and pagination */}
           </div>
-          {/* End .row */}
 
           <div className="row">
             <div className="col-lg-12" data-aos="fade-up" data-aos-delay="300">
@@ -263,10 +314,10 @@ const Home_V2 = () => {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
       {/* Exclusive Agents */}
       {/* Our Partners */}
-      <section className="our-partners pt0">
+      {/* <section className="our-partners pt0">
         <div className="container">
           <div className="row">
             <div className="col-lg-12 wow fadeInUp" data-wow-delay="100">
@@ -274,7 +325,6 @@ const Home_V2 = () => {
                 <h6>Trusted by the world’s best</h6>
               </div>
             </div>
-            {/* End .col-12 */}
 
             <div
               className="col-lg-12 text-center"
@@ -283,11 +333,9 @@ const Home_V2 = () => {
             >
               <Partner />
             </div>
-            {/* End .col-12 */}
           </div>
-          {/* End .row */}
         </div>
-      </section>
+      </section> */}
       {/* End Our Partners */}
       {/* Our CTA */}
       <Cta />

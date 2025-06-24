@@ -29,26 +29,40 @@ const Agents = () => {
             spaceBetween: 15,
           },
           1024: {
-            slidesPerView:3,
+            slidesPerView: 3,
           },
           1200: {
             slidesPerView: 4,
           },
         }}
-        autoplay={{ delay: 3000 }} // Set the desired delay for autoplay
+        autoplay={{ delay: 50000 }} // Set the desired delay for autoplay
       >
         {agents.slice(0, 7).map((agent, index) => (
           <SwiperSlide key={index}>
             <div className="item " key={index}>
-              <Link to={`/agent-single/${agent.id}`}>
+              <Link to={`#`}>
                 <div className="team-style1">
                   <div className="team-img">
-                    <img
-                    style={{ aspectRatio: "1/1" }}
-                      className="w-100 h-100 cover"
-                      src={agent.image}
-                      alt="agent team"
-                    />
+                    <div
+                      style={{
+                        aspectRatio: "1 / 1",
+                        overflow: "hidden",
+                        position: "relative",
+                      }}
+                      className="bdrs12 w-100 h-100 "
+                    >
+                      <img
+                        src={agent.image}
+                        className="cover"
+                        alt="agents"
+                        style={{
+                          width: "110%",
+                          height: "100%",
+                          objectFit: "cover",
+                          transform: "translateX(-3%)",
+                        }}
+                      />
+                    </div>
                   </div>
                   <div className="team-content pt20">
                     <h6 className="title mb-1 mt-2">

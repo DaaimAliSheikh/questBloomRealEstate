@@ -1,31 +1,40 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import ListingSidebar from "../../sidebar";
 import AdvanceFilterModal from "@/components/common/advance-filter-two";
 import TopFilterBar from "./TopFilterBar";
 import FeaturedListings from "./FeatuerdListings";
-import PaginationTwo from "../../PaginationTwo";
 import api from "@/api/axios";
 import mapApiDataToTemplate from "@/utilis/mapApiDataToTemplate";
-import usePropertyStore from "@/store/propertyStore"; // Import the store
+import usePropertyStore from "@/store/propertyStore";
 import mapApiDataToTemplateSingle from "@/utilis/mapApiDataToTemplateSingle";
+import { useLocation } from "react-router-dom";
 
 const isDev = import.meta.env.DEV;
+
+// Function to create completion_date_ranges for a single year
+const createCompletionDateRangesForYear = (year) => {
+  const fromDate = new Date(`${year}-01-01T00:00:00`); // January 1st 00:00:00
+  const toDate = new Date(`${year}-12-31T23:59:59`); // December 31st 23:59:59
+
+  const fromTimestamp = Math.floor(new Date(fromDate).getTime());
+  const toTimestamp = Math.floor(new Date(toDate).getTime());
+
+  return `${fromTimestamp}-${toTimestamp}`;
+};
 
 const hardcoded_facilities = ["Swimming Pool"];
 
 export default function ProperteyFiltering({ region, search }) {
   // Get all data and actions from store
   const {
-    listings,
     filteredData,
     sortedFilteredData,
-    loading,
     selectedPropertyType,
     priceRange,
     location,
     categories,
     bedrooms,
-    bathroms,
+    bathrooms,
     squirefeet,
     yearBuild,
     propertyId,
@@ -34,10 +43,8 @@ export default function ProperteyFiltering({ region, search }) {
     propertyTypes,
     facilityOptions,
     saleStatuses,
-    setListings,
     setFilteredData,
     setSortedFilteredData,
-    setLoading,
     setDataFetched,
     setLocationOptions,
     setPropertyTypes,
@@ -48,110 +55,31 @@ export default function ProperteyFiltering({ region, search }) {
     handleLocation,
     handleCategories,
     handleBedrooms,
-    handleBathroms,
+    handleBathrooms,
     handleSquirefeet,
     handleYearBuild,
     handlePropertyId,
     handleListingStatus,
     resetAllFilters,
+    percentagePreHandover,
+    handlePercentagePreHandover,
     shouldFetchData,
   } = usePropertyStore();
 
   // Local component states
   const [currentSortingOption, setCurrentSortingOption] = useState("Newest");
-  const [pageNumber, setPageNumber] = useState(1);
   const [colstyle, setColstyle] = useState(false);
-  const [pageItems, setPageItems] = useState([]);
-  const [pageContentTrac, setPageContentTrac] = useState([]);
-
-  // Pagination states
-  const [paginationInfo, setPaginationInfo] = useState({
-    has_next: false,
-    has_prev: false,
-    page: 1,
-    pages: 1,
-    per_page: 9,
-    total: 0,
-  });
-
-  const [fetchedPages, setFetchedPages] = useState(new Set([1])); // Track which pages have been fetched
-
-  // Update page items based on current page and available data
-  useEffect(() => {
-    const startIndex = (pageNumber - 1) * 9;
-    const endIndex = pageNumber * 9;
-    const currentPageItems = listings.slice(startIndex, startIndex + 9);
-    setPageItems(currentPageItems);
-    setPageContentTrac([
-      startIndex + 1,
-      Math.min(endIndex, listings.length),
-      paginationInfo.total,
-    ]);
-  }, [pageNumber, listings, paginationInfo.total]);
-
-  // Handle page change - fetch new data if needed
-  const handlePageChange = async (newPageNumber) => {
-    setPageNumber(newPageNumber);
-    // If we haven't fetched this page yet and we're going forward
-    if (
-      !fetchedPages.has(newPageNumber) &&
-      newPageNumber > Math.max(...fetchedPages)
-    ) {
-      await fetchPageData(newPageNumber);
-    }
-  };
-
-  // Fetch data for a specific page
-  const fetchPageData = async (page) => {
-    setLoading(true);
-    try {
-      const params = {
-        page,
-        per_page: 9,
-        ...(region && { region }),
-        ...(search && { search_query: search }),
-      };
-
-      const { data } = await api.get("/properties", { params });
-
-      // Get detailed data for new items
-      // const newDetailedListings = await Promise.all(
-      //   data.items.map(async (listing) => {
-      //     const id = listing.id;
-      //     const { data: detailedData } = isDev
-      //       ? await api.get(`/properties/${id}`)
-      //       : await api.get("/property", { params: { id } });
-      //     return detailedData;
-      //   })
-      // );
-
-      // Map new listings
-      const mappedNewListings = data.items.map((item) =>
-        mapApiDataToTemplateSingle(item)
-      );
-
-      // Update store with merged data
-      // setDetailedListings([...detailedListings, ...newDetailedListings]);
-      setListings([...listings, ...mappedNewListings]);
-
-      // Update pagination info
-      setPaginationInfo(data.pagination);
-
-      // Mark this page as fetched
-      setFetchedPages((prev) => new Set([...prev, page]));
-    } catch (error) {
-      console.error("Failed to fetch page data", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [hasMore, setHasMore] = useState(true);
+  const routelocation = useLocation();
+  const isOffPlan = routelocation.pathname.startsWith("/off-plan");
+  const [listings, setListings] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const resetFilter = () => {
     setCurrentSortingOption("Newest");
-    setPageNumber(1);
-
-    // Reset all store filters
     resetAllFilters();
+    setListings([]); // Clear existing listings
+    setHasMore(true); // Reset hasMore when filters change
 
     document.querySelectorAll(".filterInput").forEach(function (element) {
       element.value = null;
@@ -172,7 +100,7 @@ export default function ProperteyFiltering({ region, search }) {
     handlepropertyType: handlePropertyType,
     handlepriceRange: handlePriceRange,
     handlebedrooms: handleBedrooms,
-    handlebathroms: handleBathroms,
+    handleBathrooms: handleBathrooms,
     handlelocation: handleLocation,
     handlesquirefeet: handleSquirefeet,
     handleyearBuild: handleYearBuild,
@@ -183,25 +111,98 @@ export default function ProperteyFiltering({ region, search }) {
     propertyTypes,
     resetFilter,
     bedrooms,
-    bathroms,
+    bathrooms,
     location,
     squirefeet,
     yearBuild,
     categories,
     selectedPropertyType,
+    percentagePreHandover,
+    handlePercentagePreHandover,
   };
 
+  // Fetch more data when reaching bottom
+  const fetchMoreData = useCallback(async () => {
+    if (loading || !hasMore) return;
+
+    setLoading(true);
+    try {
+      const nextPage = Math.floor(listings.length / 9) + 1;
+
+      const params = {
+        page: nextPage,
+        per_page: 9,
+        ...(selectedPropertyType != "All Property Types" && {
+          unit_types: selectedPropertyType,
+        }),
+        ...(priceRange[0] != 0 && {
+          unit_price_from: priceRange[0],
+        }),
+        ...(priceRange[1] != 10000000 && {
+          unit_price_to: priceRange[1],
+        }),
+        ...(propertyId != "" && { project_ids: propertyId }),
+        ...(yearBuild != 50000 &&
+          isOffPlan && {
+            completion_date_ranges:
+              createCompletionDateRangesForYear(yearBuild),
+          }),
+        ...(location != "All Locations" && { areas: location }),
+        ...(bedrooms != 0 && { unit_bedrooms: bedrooms }),
+        ...(bathrooms != 0 && { unit_bathrooms: bathrooms }),
+        ...(squirefeet.length !== 0 &&
+          squirefeet[0] !== 0 && {
+            unit_area_from: squirefeet[0],
+          }),
+        ...(squirefeet.length !== 0 &&
+          squirefeet[1] !== 0 && {
+            unit_area_to: squirefeet[1],
+          }),
+        ...(listingStatus != "All" && { sale_status: listingStatus }),
+        ...(region && { region }),
+        ...(search && { search_query: search }),
+      };
+      console.log("more params", params);
+
+      const { data } = await api.get("/properties", { params });
+
+      if (data.items.length === 0) {
+        setHasMore(false);
+        return;
+      }
+
+      const mappedNewListings = data.items.map((item) =>
+        mapApiDataToTemplateSingle(item)
+      );
+
+      setListings([...listings, ...mappedNewListings]);
+    } catch (error) {
+      console.error("Failed to fetch more data", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [
+    listings,
+    loading,
+    hasMore,
+    selectedPropertyType,
+    priceRange,
+    propertyId,
+    location,
+    bedrooms,
+    squirefeet,
+    listingStatus,
+    region,
+    search,
+    setListings,
+    setLoading,
+  ]);
   // Initial data fetch
   useEffect(() => {
     async function fetchInitialData() {
-      // if (!shouldFetchData()) {
-      //   console.log("blocked by shouldFetchData");
-      //   return;
-      // }
-      // if (detailedListings.length > 0 || listings.length > 0) return;
-
       setLoading(true);
-
+      setListings([]); // Clear existing listings
+      setHasMore(true); // Reset hasMore when filters change
       try {
         const params = {
           page: 1,
@@ -216,9 +217,15 @@ export default function ProperteyFiltering({ region, search }) {
             unit_price_to: priceRange[1],
           }),
           ...(propertyId != "" && { project_ids: propertyId }),
+          ...(yearBuild &&
+            yearBuild != 50000 &&
+            isOffPlan && {
+              completion_date_ranges:
+                createCompletionDateRangesForYear(yearBuild),
+            }),
           ...(location != "All Locations" && { areas: location }),
           ...(bedrooms != 0 && { unit_bedrooms: bedrooms }),
-
+          ...(bathrooms != 0 && { unit_bathrooms: bathrooms }),
           ...(squirefeet.length !== 0 &&
             squirefeet[0] !== 0 && {
               unit_area_from: squirefeet[0],
@@ -231,43 +238,19 @@ export default function ProperteyFiltering({ region, search }) {
           ...(region && { region }),
           ...(search && { search_query: search }),
         };
-        // Logging all variables used in `params`
-
-        console.log("Constructed params:", params);
+        console.log("initial params", params);
         const { data } = await api.get("/properties", { params });
-
-        // const detailedListings = await Promise.all(
-        //   data.items.map(async (listing) => {
-        //     const id = listing.id;
-        //     const { data: detailedData } = isDev
-        //       ? await api.get(`/properties/${id}`)
-        //       : await api.get("/property", { params: { id } });
-        //     return detailedData;
-        //   })
-        // );
-        // setDetailedListings(detailedListings);
 
         // Set listings in store
         const mappedNewListings = data.items.map((item) =>
           mapApiDataToTemplateSingle(item)
         );
         setListings(mappedNewListings);
-
-        // Set pagination info
-        setPaginationInfo(data.pagination);
-        setFetchedPages(new Set([1]));
+        setHasMore(data.items.length === 9); // If we got 9 items, there might be more
 
         // Must refetch since the format in whcih they are fetched on home page is different
         const newSaleStatuses = await api.get("/sale-statuses");
-        const formattedStatuses = [
-          { id: "flexRadioDefault0", label: "All", defaultChecked: true },
-          ...newSaleStatuses.data.map((status, index) => ({
-            id: `flexRadioDefault${index + 1}`,
-            label: status,
-          })),
-        ];
-        console.log("saleStatuses", formattedStatuses);
-        setSaleStatuses(formattedStatuses);
+        setSaleStatuses(newSaleStatuses.data);
 
         setFacilityOptions(hardcoded_facilities);
 
@@ -294,7 +277,7 @@ export default function ProperteyFiltering({ region, search }) {
           ];
           setLocationOptions(options);
         }
-        setPageNumber(1);
+
         setDataFetched(true);
       } catch (error) {
         console.error("Failed to fetch listings", error);
@@ -318,128 +301,22 @@ export default function ProperteyFiltering({ region, search }) {
     propertyId,
   ]);
 
-  // Client-side filtering logic (now works on paginated data)
-  // useEffect(() => {
-  //   if (listings.length === 0) return;
+  // Handle scroll events for infinite loading
+  useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + document.documentElement.scrollTop >=
+        document.documentElement.offsetHeight - 500
+      ) {
+        fetchMoreData();
+      }
+    };
 
-  //   const refItems = listings.filter((elm) => {
-  //     if (listingStatus === "All") {
-  //       return true;
-  //     }
-  //     return elm.sale_status === listingStatus;
-  //   });
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [fetchMoreData]);
 
-  //   let filteredArrays = [];
-
-  //   // Property type filter
-  //   if (selectedPropertyType !== "All Property Types") {
-  //     const filtered = refItems.filter((elm) =>
-  //       elm.propertyTypes.includes(selectedPropertyType)
-  //     );
-  //     filteredArrays = [...filteredArrays, filtered];
-  //   } else {
-  //     filteredArrays = [...filteredArrays, refItems];
-  //   }
-
-  //   // Beds filter
-  //   filteredArrays = [
-  //     ...filteredArrays,
-  //     refItems.filter((el) => {
-  //       return el.bed >= bedrooms;
-  //     }),
-  //   ];
-
-  //   // Bathrooms filter
-  //   filteredArrays = [
-  //     ...filteredArrays,
-  //     refItems.filter((el) => {
-  //       return el.bath >= bathroms;
-  //     }),
-  //   ];
-
-  //   // Categories filter
-  //   filteredArrays = [
-  //     ...filteredArrays,
-  //     !categories.length
-  //       ? [...refItems]
-  //       : refItems.filter((elm) =>
-  //           categories.every((elem) =>
-  //             elm.features.some((feature) => feature.trim() === elem.trim())
-  //           )
-  //         ),
-  //   ];
-
-  //   // Location filter
-  //   if (location !== "All Locations") {
-  //     filteredArrays = [
-  //       ...filteredArrays,
-  //       refItems.filter((el) => el.city === location),
-  //     ];
-  //   }
-
-  //   // Price range filter
-  //   if (priceRange.length > 0) {
-  //     const filtered = refItems.filter(
-  //       (elm) =>
-  //         Number(elm.price.split("$")[1].split(",").join("")) >=
-  //           priceRange[0] &&
-  //         Number(elm.price.split("$")[1].split(",").join("")) <= priceRange[1]
-  //     );
-  //     filteredArrays = [...filteredArrays, filtered];
-  //   }
-
-  //   // Square feet filter
-  //   if (
-  //     squirefeet.length > 0 &&
-  //     squirefeet[1] &&
-  //     squirefeet[0] <= squirefeet[1] &&
-  //     squirefeet[0] !== 0 &&
-  //     squirefeet[1] !== 0
-  //   ) {
-  //     const filtered = refItems.filter((elm) => {
-  //       const [rangeMin, rangeMax] = squirefeet;
-
-  //       const minInRange =
-  //         elm.min_sqft >= Number(rangeMin) && elm.min_sqft <= Number(rangeMax);
-  //       const maxInRange =
-  //         elm.max_sqft >= Number(rangeMin) && elm.max_sqft <= Number(rangeMax);
-  //       const rangeWithinElm =
-  //         Number(rangeMin) >= elm.min_sqft && Number(rangeMax) <= elm.max_sqft;
-
-  //       return minInRange || maxInRange || rangeWithinElm;
-  //     });
-  //     filteredArrays = [...filteredArrays, filtered];
-  //   }
-
-  //   // Year built filter
-  //   if (yearBuild.length > 0) {
-  //     const filtered = refItems.filter(
-  //       (elm) =>
-  //         elm.yearBuilding >= yearBuild[0] && elm.yearBuilding <= yearBuild[1]
-  //     );
-  //     filteredArrays = [...filteredArrays, filtered];
-  //   }
-
-  //   const commonItems = refItems
-  //     .filter((item) => filteredArrays.every((array) => array.includes(item)))
-  //     .filter((item) => (propertyId !== "" ? item.id == propertyId : true));
-
-  //   setFilteredData(commonItems);
-  // }, [
-  //   listingStatus,
-  //   selectedPropertyType,
-  //   priceRange,
-  //   bedrooms,
-  //   bathroms,
-  //   location,
-  //   squirefeet,
-  //   categories,
-  //   listings,
-  //   propertyId,
-  //   setFilteredData,
-  // ]);
-
-  // Sorting logic
+  // Sorting effect remains the same
   useEffect(() => {
     if (currentSortingOption === "Newest") {
       const sorted = [...listings].sort(
@@ -465,22 +342,6 @@ export default function ProperteyFiltering({ region, search }) {
     }
   }, [currentSortingOption]);
 
-  // Reset to page 1 when filters change
-  useEffect(() => {
-    setPageNumber(1);
-  }, [
-    listingStatus,
-    selectedPropertyType,
-    priceRange,
-    bedrooms,
-    bathroms,
-    location,
-    squirefeet,
-    yearBuild,
-    categories,
-    propertyId,
-  ]);
-
   return (
     <section className="pt0 pb90 bgc-f7">
       <div className="container">
@@ -503,7 +364,14 @@ export default function ProperteyFiltering({ region, search }) {
             ></button>
           </div>
           <div className="offcanvas-body p-0">
-            <ListingSidebar filterFunctions={filterFunctions} />
+            <ListingSidebar
+              setDataFetched={setDataFetched}
+              locationOptions={locationOptions}
+              propertyTypes={propertyTypes}
+              facilityOptions={facilityOptions}
+              filterFunctions={filterFunctions}
+              saleStatuses={saleStatuses}
+            />
           </div>
         </div>
         {/* End mobile filter sidebar */}
@@ -523,7 +391,6 @@ export default function ProperteyFiltering({ region, search }) {
               propertyTypes={propertyTypes}
               facilityOptions={facilityOptions}
               filterFunctions={filterFunctions}
-              setPageNumber={setPageNumber}
             />
           </div>
         </div>
@@ -532,7 +399,6 @@ export default function ProperteyFiltering({ region, search }) {
         <div className="row">
           <TopFilterBar
             setDataFetched={setDataFetched}
-            pageContentTrac={pageContentTrac}
             colstyle={colstyle}
             setColstyle={setColstyle}
             filterFunctions={filterFunctions}
@@ -543,7 +409,7 @@ export default function ProperteyFiltering({ region, search }) {
         </div>
         {/* End TopFilterBar */}
 
-        {loading ? (
+        {loading && listings.length === 0 ? (
           <div className="row">
             <div
               style={{
@@ -555,10 +421,11 @@ export default function ProperteyFiltering({ region, search }) {
               <span className="visually-hidden">{"Loading..."}</span>
             </div>
           </div>
-        ) : pageItems.length === 0 ? (
+        ) : listings.length === 0 ? (
           <h5
             style={{
-              margin: "300px",
+              marginTop: "300px",
+              marginBottom: "300px",
             }}
             className=" text-center"
           >
@@ -566,24 +433,22 @@ export default function ProperteyFiltering({ region, search }) {
           </h5>
         ) : (
           <div className="row">
-            <FeaturedListings colstyle={colstyle} data={pageItems} />
+            <FeaturedListings colstyle={colstyle} data={listings} />
+            {loading && (
+              <div className="text-center my-3">
+                <div className="spinner-border" role="status">
+                  <span className="visually-hidden">Loading more...</span>
+                </div>
+              </div>
+            )}
+            {!hasMore && listings.length > 0 && (
+              <div className="text-center my-3">
+                <p>No more listings to show</p>
+              </div>
+            )}
           </div>
         )}
-
-        {/* End .row */}
-
-        <div className="row">
-          <PaginationTwo
-            pageCapacity={9}
-            pageNumber={pageNumber}
-            setPageNumber={handlePageChange}
-            paginationInfo={paginationInfo}
-            isLoading={loading}
-          />
-        </div>
-        {/* End .row */}
       </div>
-      {/* End .container */}
     </section>
   );
 }
